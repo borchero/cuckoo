@@ -1,5 +1,7 @@
 # Cuckoo
 
+![Docker Image Version](https://img.shields.io/docker/v/borchero/cuckoo?sort=semver)
+
 Cuckoo is a command line tool to simplify CI pipelines. It is currently focused on GitLab CI and deployment to Kubernetes clusters provisioned via the Google Cloud Platform.
 
 Cuckoo enables moving from error-prone bash scripts to a powerful Go CLI tool that minimizes the time spent on debugging CI pipelines. Additionally, it has a minimal footprint (the image has a size below 60 MB at the moment) and thus speeds up CI pipelines and saves bandwidth.
