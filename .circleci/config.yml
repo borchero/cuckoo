@@ -8,11 +8,11 @@ jobs:
         steps:
         -   checkout
         -   run: |
-                export CGO_ENABLED=0 GOOS=darwin
                 mkdir build
                 cd source
                 go get github.com/markbates/pkger/cmd/pkger
                 pkger
+                export CGO_ENABLED=0 GOOS=darwin
                 go build -o ../build/cuckoo -tags netgo -ldflags '-extldflags "-static"'
                 cd ..
                 tar -czvf cuckoo.tar.gz build/
