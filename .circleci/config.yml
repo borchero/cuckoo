@@ -34,6 +34,7 @@ jobs:
                 mkdir -p ./homebrew-tools/Formula
                 cp ./cuckoo/cuckoo.rb ./homebrew-tools/Formula/cuckoo.rb
 
+                cd homebrew-tools
                 git config user.name "circleci"
                 git config user.email "noreply@borchero.com"
                 git add .
