@@ -8,13 +8,19 @@ jobs:
         steps:
         -   checkout
         -   run: |
+                export CGO_ENABLED=0 GOOS=linux
+                mkdir build
                 cd source
                 go get github.com/markbates/pkger/cmd/pkger
                 pkger
-                go build -o cuckoo
+                go build -o ../build/cuckoo -tags netgo -ldflags '-extldflags "-static"'
+                cd ..
+                tar -czvf cuckoo.tar.gz build/
+                echo $CIRCLE_WORKFLOW_ID
+                echo $CIRCLE_BUILD_NUM
         -   store_artifacts:
-                path: /tmp/cuckoo/source/cuckoo
-                destination: cuckoo
+                path: /tmp/cuckoo/cuckoo.tar.gz
+                destination: cuckoo.tar.gz
 
     # update-homebrew:
     #     docker:
