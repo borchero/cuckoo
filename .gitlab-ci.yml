@@ -1,0 +1,90 @@
+#
+#  .gitlab-ci.yml
+#  cuckoo
+#
+#  Created by Oliver Borchert on 10/25/19.
+#  Copyright (c) 2019 penflock. All rights reserved.
+#
+
+# The cuckoo CI should not use itself...
+image: 
+    name: moby/buildkit:latest
+    entrypoint: [""]
+
+stages:
+-   build
+-   deploy
+
+before_script:
+-   mkdir -p ~/.docker
+-   export AUTH=$(printf $CI_REGISTRY_USER:$CI_REGISTRY_PASSWORD | base64)
+-   echo "{\"auths\":{\"$CI_REGISTRY\":{\"auth\":\"$AUTH\"}}}" > ~/.docker/config.json
+-   export DOCKERFILE=$CI_PROJECT_DIR/deploy/docker
+-   export BUILDKIT_HOST=tcp://$BUILDKIT_HOST
+
+build-no-push:
+    stage: build
+    script:
+    -   |
+        buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=$CI_PROJECT_DIR \
+            --local dockerfile=$DOCKERFILE \
+            --opt build-arg:GCP_CREDENTIALS="$TEST_GCP_CREDENTIALS"
+    only:
+    -   merge_requests
+
+build-devel:
+    stage: build
+    script:
+    -   export BASE_DESTINATION=$CI_REGISTRY_IMAGE/devel
+    -   |
+        buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=$CI_PROJECT_DIR \
+            --local dockerfile=$DOCKERFILE \
+            --opt build-arg:GCP_CREDENTIALS="$TEST_GCP_CREDENTIALS" \
+            --output type=image,name=$BASE_DESTINATION:latest,push=true
+    only:
+    -   /^release\/.*/
+    
+build-stable:
+    stage: build
+    script:
+    -   export BASE_DESTINATION=$CI_REGISTRY_IMAGE/stable
+    -   |
+        buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=$CI_PROJECT_DIR \
+            --local dockerfile=$DOCKERFILE \
+            --opt build-arg:GCP_CREDENTIALS="$TEST_GCP_CREDENTIALS" \
+            --output type=image,name=$BASE_DESTINATION:$CI_COMMIT_TAG,push=true
+    -   |
+        buildctl build \
+            --frontend dockerfile.v0 \
+            --local context=$CI_PROJECT_DIR \
+            --local dockerfile=$DOCKERFILE \
+            --opt build-arg:GCP_CREDENTIALS="$TEST_GCP_CREDENTIALS" \
+            --output type=image,name=$BASE_DESTINATION:latest,push=true
+    only:
+    -   tags
+
+upload-to-private-homebrew:
+    stage: deploy
+    image: registry.penflock.com/devops/containers/git:latest
+    script:
+    -   mkdir -p ~/.ssh
+    -   printf "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+    -   printf "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+    -   chmod 600 ~/.ssh/id_ed25519
+    -   export ARCHIVE_URL="https://gitlab.penflock.com/api/v4/projects/${CI_PROJECT_ID}/repository/archive?sha=${CI_COMMIT_TAG}&private_token=${GITLAB_PASSWORD}"
+    -   export BREW_SHA_256=$(curl "$ARCHIVE_URL" | openssl sha256 | cut -d' ' -f2)
+    -   envsubst < deploy/brew/formula.rb > formula.rb
+    -   git clone git@gitlab.penflock.com:devops/homebrew.git ~/homebrew
+    -   mv formula.rb ~/homebrew/cuckoo.rb
+    -   cd ~/homebrew
+    -   git add .
+    -   git commit -m "Update Cuckoo Formula"
+    -   git push
+    only:
+    -   tags

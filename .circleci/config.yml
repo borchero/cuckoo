@@ -1,0 +1,46 @@
+version: 2.1
+
+jobs:
+    build-binary:
+        docker:
+        -   image: go:1.14-alpine
+        working_directory: /tmp/cuckoo
+        steps:
+        -   checkout
+        -   run: |
+                cd source
+                go get github.com/markbates/pkger/cmd/pkger
+                pkger
+                go build -o cuckoo
+        -   store_artifacts:
+                path: /tmp/cuckoo/source/cuckoo
+                destination: cuckoo
+
+    # update-homebrew:
+    #     docker:
+    #     -   image: alpine/git:latest
+    #     working_directory: /tmp/cuckoo
+    #     steps:
+    #     -   checkout
+    #     -   run: |
+    #             cd ..
+    #             git clone git@github.com:borchero/homebrew-tools.git
+    #             mkdir -p ./homebrew-tools/Formula
+    #             cp ./cuckoo/cuckoo.rb ./homebrew-tools/Formula/cuckoo.rb
+
+workflows:
+    version: 2
+    deploy-workflow:
+        jobs:
+        -   build-binary:
+                filters:
+                    branches:
+                        ignore: /.*/
+                    tags:
+                        only: /.*/
+        # -   update-homebrew:
+        #         filters:
+        #             branches:
+        #                 ignore: /.*/
+        #             tags:
+        #                 only: /.*/
