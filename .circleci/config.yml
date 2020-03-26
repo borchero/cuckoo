@@ -45,6 +45,8 @@ workflows:
                     tags:
                         only: /.*/
         -   update-homebrew:
+                requires:
+                -   build-binary
                 filters:
                     branches:
                         ignore: /.*/
