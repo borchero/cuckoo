@@ -1,13 +1,12 @@
 class Cuckoo < Formula
     desc "CLI Tool for GitLab CI and Kubernetes Deployments."
-    url "<TODO>"
-    sha256 "<TODO>"
+    url "https://circle-artifacts.com/gh/borchero/cuckoo/$CIRCLE_BUILD_NUM/artifacts/0/cuckoo.tar.gz"
+    sha256 "$ARTIFACT_SHA256"
 
     depends_on "go@1.14" => :build
 
     def install
-        system "cd source && go build -v"
-        bin.install "source/cuckoo" => "cuckoo"
+        bin.install "cuckoo"
     end
 
     test do

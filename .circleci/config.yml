@@ -16,23 +16,23 @@ jobs:
                 go build -o ../build/cuckoo -tags netgo -ldflags '-extldflags "-static"'
                 cd ..
                 tar -czvf cuckoo.tar.gz build/
-                echo $CIRCLE_WORKFLOW_ID
-                echo $CIRCLE_BUILD_NUM
         -   store_artifacts:
                 path: /tmp/cuckoo/cuckoo.tar.gz
                 destination: cuckoo.tar.gz
 
-    # update-homebrew:
-    #     docker:
-    #     -   image: alpine/git:latest
-    #     working_directory: /tmp/cuckoo
-    #     steps:
-    #     -   checkout
-    #     -   run: |
-    #             cd ..
-    #             git clone git@github.com:borchero/homebrew-tools.git
-    #             mkdir -p ./homebrew-tools/Formula
-    #             cp ./cuckoo/cuckoo.rb ./homebrew-tools/Formula/cuckoo.rb
+    update-homebrew:
+        docker:
+        -   image: alpine/git:latest
+        working_directory: /tmp/cuckoo
+        steps:
+        -   checkout
+        -   run: |
+                wget https://circle-artifacts.com/gh/borchero/cuckoo/$CIRCLE_BUILD_NUM/artifacts/0/cuckoo.tar.gz
+                export ARTIFACT_SHA256=$(cat cuckoo.tar.gz | sha256sum | cut -d' ' -f1)
+                cd ..
+                git clone git@github.com:borchero/homebrew-tools.git
+                mkdir -p ./homebrew-tools/Formula
+                cp ./cuckoo/cuckoo.rb ./homebrew-tools/Formula/cuckoo.rb
 
 workflows:
     version: 2
@@ -44,9 +44,9 @@ workflows:
                         ignore: /.*/
                     tags:
                         only: /.*/
-        # -   update-homebrew:
-        #         filters:
-        #             branches:
-        #                 ignore: /.*/
-        #             tags:
-        #                 only: /.*/
+        -   update-homebrew:
+                filters:
+                    branches:
+                        ignore: /.*/
+                    tags:
+                        only: /.*/
