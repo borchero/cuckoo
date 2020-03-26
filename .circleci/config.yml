@@ -34,6 +34,12 @@ jobs:
                 mkdir -p ./homebrew-tools/Formula
                 cp ./cuckoo/cuckoo.rb ./homebrew-tools/Formula/cuckoo.rb
 
+                git config user.name "circleci"
+                git config user.email "noreply@borchero.com"
+                git add .
+                git commit -m "Update Cuckoo"
+                git push origin master
+
 workflows:
     version: 2
     deploy-workflow:
