@@ -2,6 +2,7 @@ class Cuckoo < Formula
     desc "CLI Tool for GitLab CI and Kubernetes Deployments."
     url "https://circle-artifacts.com/gh/borchero/cuckoo/$CIRCLE_PREVIOUS_BUILD_NUM/artifacts/0/cuckoo.tar.gz"
     sha256 "$ARTIFACT_SHA256"
+    version "$CIRCLE_TAG"
 
     depends_on "go@1.14" => :build
 
