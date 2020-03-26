@@ -7,7 +7,7 @@ class Cuckoo < Formula
     depends_on "go@1.14" => :build
 
     def install
-        bin.install "bin/cuckoo"
+        bin.install "cuckoo"
     end
 
     test do
