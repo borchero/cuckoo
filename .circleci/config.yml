@@ -3,7 +3,7 @@ version: 2.1
 jobs:
     build-binary:
         docker:
-        -   image: golang:1.14-alpine
+        -   image: golang:1.14
         working_directory: /tmp/cuckoo
         steps:
         -   checkout
