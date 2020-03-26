@@ -27,12 +27,14 @@ jobs:
         steps:
         -   checkout
         -   run: |
+                apt-get update && apt-get install -y gettext-base
+
                 wget https://circle-artifacts.com/gh/borchero/cuckoo/$CIRCLE_PREVIOUS_BUILD_NUM/artifacts/0/cuckoo.tar.gz
                 export ARTIFACT_SHA256=$(cat cuckoo.tar.gz | sha256sum | cut -d' ' -f1)
                 cd ..
                 git clone git@github.com:borchero/homebrew-tools.git
                 mkdir -p ./homebrew-tools/Formula
-                cp ./cuckoo/cuckoo.rb ./homebrew-tools/Formula/cuckoo.rb
+                envsubst < ./cuckoo/cuckoo.rb > ./homebrew-tools/Formula/cuckoo.rb
 
                 cd homebrew-tools
                 git config user.name "circleci"
