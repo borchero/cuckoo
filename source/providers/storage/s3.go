@@ -90,7 +90,7 @@ func (s *s3) uploadObject(object TransferObject) error {
 
 	// 2) Upload
 	// 2.1) Get Mime
-	mimeType, err := getMimeType(file)
+	mimeType, err := getMimeType(object.LocalPath, file)
 	if err != nil {
 		return fmt.Errorf("Failed getting mime type of local file '%s': %s", object.LocalPath, err)
 	}

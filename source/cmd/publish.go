@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"strings"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"go.borchero.com/cuckoo/providers/cdn"
@@ -103,6 +103,8 @@ func runPublish(cmd *cobra.Command, args []string) {
 	}
 
 	// 3) Get objects to upload
+	publishArgs.dir = filepath.Clean(publishArgs.dir)
+
 	// 3.1) Iterate over directory
 	files, err := utils.GetMatchingFiles(".*", publishArgs.dir)
 	if err != nil {
@@ -110,15 +112,15 @@ func runPublish(cmd *cobra.Command, args []string) {
 	}
 
 	// 3.2) Get transfer objects
-	prefixLen := len(publishArgs.dir)
-	if strings.HasSuffix(publishArgs.dir, ".") {
-		prefixLen--
-	}
 	transfer := make([]storage.TransferObject, len(files))
 	bucketPaths := make(map[string]void)
 
 	for i, file := range files {
-		bucketPath := publishArgs.prefix + file[prefixLen:]
+		relPath, err := filepath.Rel(publishArgs.dir, filepath.Clean(file))
+		if err != nil {
+			typewriter.Fail(logger, "Unexpected error occurred", err)
+		}
+		bucketPath := publishArgs.prefix + relPath
 		transfer[i] = storage.TransferObject{
 			LocalPath:  file,
 			BucketPath: bucketPath,
